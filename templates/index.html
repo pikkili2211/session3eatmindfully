@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eat Mindfully - AI-Powered Nutrition Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .results h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .result-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .result-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result-item .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .meal-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .meal-row {
+            display: contents;
+        }
+
+        .meal-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .meal-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .menu-dropdown {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            min-height: 120px;
+        }
+        
+        .menu-dropdown.loading {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .menu-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .menu-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .menu-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+
+        .nutrition-summary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .nutrition-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .suggestions {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .suggestions h3 {
+            margin-bottom: 15px;
+        }
+
+        .suggestions ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .suggestions li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .suggestions li:last-child {
+            border-bottom: none;
+        }
+
+        .suggestions p {
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .meal-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .meal-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Eat Mindfully</h1>
+            <p>AI-Powered Nutrition Tracker with Andhra Cuisine Focus</p>
+        </div>
+
+        <!-- Calorie Calculation Section -->
+        <div class="card">
+            <h2>📊 Calculate Your Daily Calorie Needs</h2>
+            <form id="calorieForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" name="age" required min="1" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="height">Height (cm)</label>
+                        <input type="number" id="height" name="height" required min="100" max="250">
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" id="weight" name="weight" required min="30" max="200" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="activity">Activity Level</label>
+                        <select id="activity" name="activity_level" required>
+                            <option value="">Select Activity Level</option>
+                            <option value="no_activity">No Activity</option>
+                            <option value="light">Light: Exercise 1-3 times/week</option>
+                            <option value="moderate">Moderate: Exercise 4-5 times/week</option>
+                            <option value="active">Active: Daily exercise or intense exercise 3-4 times/week</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Calculate Calories</button>
+            </form>
+
+            <div id="calorieResults" class="results hidden">
+                <h3>Your Daily Nutrition Requirements</h3>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <div class="value" id="bmrValue">0</div>
+                        <div class="label">BMR (Calories)</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="value" id="tdeeValue">0</div>
+                        <div class="label">TDEE (Calories)</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="value" id="proteinValue">0g</div>
+                        <div class="label">Protein</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="value" id="carbsValue">0g</div>
+                        <div class="label">Carbohydrates</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="value" id="fiberValue">0g</div>
+                        <div class="label">Fiber</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nutrition Tracking -->
+        <div id="nutritionTracking" class="nutrition-summary hidden">
+            <h3>📈 Daily Nutrition Tracking</h3>
+            <div class="nutrition-grid">
+                <div class="nutrition-item">
+                    <div class="value" id="consumedCalories">0</div>
+                    <div class="label">Consumed Calories</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="calorieProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="value" id="consumedProtein">0g</div>
+                    <div class="label">Consumed Protein</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="proteinProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="value" id="consumedCarbs">0g</div>
+                    <div class="label">Consumed Carbs</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="carbsProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="nutrition-item">
+                    <div class="value" id="consumedFiber">0g</div>
+                    <div class="label">Consumed Fiber</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="fiberProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meal Planning Section -->
+        <div class="card">
+            <h2>🍴 Meal Planning & Tracking</h2>
+            <div class="meal-section">
+                <!-- First Row: Breakfast and Lunch -->
+                <div class="meal-card">
+                    <h3>🌅 Breakfast</h3>
+                    <div class="form-group">
+                        <div id="breakfastMenu" class="menu-dropdown"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Selected Items:</label>
+                        <div id="breakfastSelected"></div>
+                    </div>
+                </div>
+
+                <div class="meal-card">
+                    <h3>☀️ Lunch</h3>
+                    <div class="form-group">
+                        <div id="lunchMenu" class="menu-dropdown"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Selected Items:</label>
+                        <div id="lunchSelected"></div>
+                    </div>
+                </div>
+
+                <!-- Second Row: Snack and Dinner -->
+                <div class="meal-card">
+                    <h3>🍎 Snack</h3>
+                    <div class="form-group">
+                        <div id="snackMenu" class="menu-dropdown"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Selected Items:</label>
+                        <div id="snackSelected"></div>
+                    </div>
+                </div>
+
+                <div class="meal-card">
+                    <h3>🌙 Dinner</h3>
+                    <div class="form-group">
+                        <div id="dinnerMenu" class="menu-dropdown"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Selected Items:</label>
+                        <div id="dinnerSelected"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="button" class="btn" onclick="generateAllMenus()" id="generateMenuBtn">Calculate Consumption</button>
+                <div id="menuLoading" class="loading hidden" style="margin-top: 10px;">
+                    <p>🤖 AI is generating authentic Andhra cuisine menus...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Suggestions -->
+        <div id="aiSuggestions" class="suggestions hidden">
+            <h3>🤖 AI-Powered Suggestions</h3>
+            <div id="suggestionsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let userRequirements = {};
+        let selectedItems = {
+            breakfast: [],
+            lunch: [],
+            snack: [],
+            dinner: []
+        };
+
+        // Auto-populate menus when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, auto-populating menus...');
+            autoPopulateMenus();
+        });
+
+        // Auto-populate menus with default calorie values - SINGLE API CALL
+        async function autoPopulateMenus() {
+            try {
+                const defaultCalories = 2000; // Default total calories
+                
+                // Show loading state for all dropdowns
+                const mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
+                mealTypes.forEach(mealType => {
+                    const dropdown = document.getElementById(mealType + 'Menu');
+                    dropdown.classList.add('loading');
+                    dropdown.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">🤖 Loading Andhra cuisine options...</div>';
+                });
+                
+                console.log('Making single API call to populate all menus...');
+                const response = await fetch('/generate_all_menus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        total_calories: defaultCalories
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Populate all meal dropdowns
+                    Object.keys(result.menus).forEach(mealType => {
+                        const dropdown = document.getElementById(mealType + 'Menu');
+                        dropdown.classList.remove('loading');
+                        displayMenu(mealType, result.menus[mealType]);
+                    });
+                    
+                    console.log('All menus populated with single API call!');
+                } else {
+                    console.error('Error auto-populating menus:', result.error);
+                    // Show error state
+                    mealTypes.forEach(mealType => {
+                        const dropdown = document.getElementById(mealType + 'Menu');
+                        dropdown.classList.remove('loading');
+                        dropdown.innerHTML = '<div style="text-align: center; padding: 20px; color: #e74c3c;">❌ Failed to load menu. Please try again.</div>';
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error auto-populating menus:', error);
+                // Show error state
+                const mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
+                mealTypes.forEach(mealType => {
+                    const dropdown = document.getElementById(mealType + 'Menu');
+                    dropdown.classList.remove('loading');
+                    dropdown.innerHTML = '<div style="text-align: center; padding: 20px; color: #e74c3c;">❌ Failed to load menu. Please try again.</div>';
+                });
+            }
+        }
+
+        // Calorie calculation form submission
+        document.getElementById('calorieForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/calculate_calories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    userRequirements = {
+                        calories: result.tdee,
+                        protein: result.macros.protein,
+                        carbs: result.macros.carbs,
+                        fiber: result.macros.fiber
+                    };
+                    
+                    document.getElementById('bmrValue').textContent = result.bmr;
+                    document.getElementById('tdeeValue').textContent = result.tdee;
+                    document.getElementById('proteinValue').textContent = result.macros.protein + 'g';
+                    document.getElementById('carbsValue').textContent = result.macros.carbs + 'g';
+                    document.getElementById('fiberValue').textContent = result.macros.fiber + 'g';
+                    
+                    document.getElementById('calorieResults').classList.remove('hidden');
+                    document.getElementById('nutritionTracking').classList.remove('hidden');
+                    
+                    // Don't regenerate menus - keep the existing ones
+                    console.log('Calorie requirements calculated. Menus remain unchanged.');
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error calculating calories: ' + error.message);
+            }
+        });
+
+        // Calculate consumption and get AI suggestions - SECOND API CALL
+        async function generateAllMenus() {
+            if (!userRequirements.calories) {
+                alert('Please calculate your calorie requirements first!');
+                return;
+            }
+
+            try {
+                // Show loading state
+                const button = document.getElementById('generateMenuBtn');
+                const loadingDiv = document.getElementById('menuLoading');
+                
+                button.textContent = 'Calculating Consumption...';
+                button.disabled = true;
+                loadingDiv.classList.remove('hidden');
+                loadingDiv.innerHTML = '<p>🤖 AI is analyzing your consumption and generating suggestions...</p>';
+
+                // Calculate current consumption
+                let totalCalories = 0;
+                let totalProtein = 0;
+                let totalCarbs = 0;
+                let totalFiber = 0;
+
+                Object.values(selectedItems).forEach(mealItems => {
+                    mealItems.forEach(item => {
+                        totalCalories += item.calories;
+                        totalProtein += item.protein;
+                        totalCarbs += item.carbs;
+                        totalFiber += item.fiber;
+                    });
+                });
+
+                // Calculate differences
+                const calorieDiff = userRequirements.calories - totalCalories;
+                const proteinDiff = userRequirements.protein - totalProtein;
+                const carbDiff = userRequirements.carbs - totalCarbs;
+                const fiberDiff = userRequirements.fiber - totalFiber;
+
+                console.log('Making second API call for suggestions...');
+                
+                // Get AI suggestions - SECOND API CALL
+                const response = await fetch('/get_suggestions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        calorie_diff: Math.round(calorieDiff),
+                        protein_diff: Math.round(proteinDiff),
+                        carb_diff: Math.round(carbDiff),
+                        fiber_diff: Math.round(fiberDiff)
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Display suggestions as bullet points
+                    const formattedSuggestions = formatSuggestions(result.suggestions);
+                    document.getElementById('suggestionsContent').innerHTML = formattedSuggestions;
+                    document.getElementById('aiSuggestions').classList.remove('hidden');
+                    
+                    console.log('AI suggestions generated successfully!');
+                } else {
+                    console.error('Error getting suggestions:', result.error);
+                    // Show fallback suggestions
+                    const fallbackSuggestions = generateFallbackSuggestions(calorieDiff, proteinDiff, carbDiff, fiberDiff);
+                    document.getElementById('suggestionsContent').innerHTML = fallbackSuggestions;
+                    document.getElementById('aiSuggestions').classList.remove('hidden');
+                }
+                
+            } catch (error) {
+                console.error('Error getting suggestions:', error);
+                // Show fallback suggestions
+                const fallbackSuggestions = generateFallbackSuggestions(0, 0, 0, 0);
+                document.getElementById('suggestionsContent').innerHTML = fallbackSuggestions;
+                document.getElementById('aiSuggestions').classList.remove('hidden');
+            } finally {
+                // Reset button state
+                const button = document.getElementById('generateMenuBtn');
+                const loadingDiv = document.getElementById('menuLoading');
+                
+                button.textContent = 'Calculate Consumption';
+                button.disabled = false;
+                loadingDiv.classList.add('hidden');
+            }
+        }
+
+        // Format AI suggestions into proper bullet points
+        function formatSuggestions(suggestions) {
+            // Split by lines and filter out empty lines
+            const lines = suggestions.split('\n').filter(line => line.trim() !== '');
+            
+            // Take only the first 3 suggestions and format them
+            const formattedLines = lines.slice(0, 3).map(line => {
+                // Remove any existing numbering or bullet points
+                const cleanLine = line.replace(/^[\d\.\-\•\*]\s*/, '').trim();
+                return `• ${cleanLine}`;
+            });
+            
+            return formattedLines.join('<br>');
+        }
+
+        // Fallback suggestions function
+        function generateFallbackSuggestions(calorieDiff, proteinDiff, carbDiff, fiberDiff) {
+            const suggestions = [];
+            
+            // Prioritize the most significant nutrition gap
+            if (Math.abs(calorieDiff) > Math.abs(proteinDiff) && Math.abs(calorieDiff) > Math.abs(fiberDiff)) {
+                if (calorieDiff < -200) {
+                    suggestions.push("• Add Andhra snacks like roasted peanuts or banana chips to increase calories");
+                    suggestions.push("• Include an extra serving of rice with your meals");
+                } else if (calorieDiff > 200) {
+                    suggestions.push("• Reduce portion sizes, especially rice and oil in curries");
+                    suggestions.push("• Choose lighter Andhra options like rasam rice instead of heavy curries");
+                }
+            } else if (Math.abs(proteinDiff) > Math.abs(fiberDiff)) {
+                if (proteinDiff < -10) {
+                    suggestions.push("• Include more dal, chicken curry, or fish curry in your meals");
+                    suggestions.push("• Add protein-rich Andhra snacks like roasted chana or boiled eggs");
+                } else if (proteinDiff > 10) {
+                    suggestions.push("• Balance with more vegetables and reduce meat portions");
+                }
+            } else {
+                if (fiberDiff < -5) {
+                    suggestions.push("• Include more vegetables in your Andhra meals");
+                    suggestions.push("• Add fruits like banana or apple as snacks");
+                }
+            }
+            
+            // Fill remaining slots with general healthy advice
+            if (suggestions.length < 3) {
+                suggestions.push("• Maintain balanced portions of rice, dal, and vegetables");
+            }
+            if (suggestions.length < 3) {
+                suggestions.push("• Stay hydrated with water and buttermilk");
+            }
+            if (suggestions.length < 3) {
+                suggestions.push("• Consider traditional Andhra snacks like pesarattu or upma");
+            }
+            
+            return suggestions.slice(0, 3).join('<br>'); // Return exactly 3 suggestions
+        }
+
+        // Generate menu for specific meal type
+        async function generateMenu(mealType, calories) {
+            try {
+                const response = await fetch('/generate_menu', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        meal_type: mealType,
+                        calories: calories,
+                        cuisine: 'Andhra'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayMenu(mealType, result.menu_items);
+                } else {
+                    console.error('Error generating menu:', result.error);
+                }
+            } catch (error) {
+                console.error('Error generating menu:', error);
+            }
+        }
+
+        // Display menu options
+        function displayMenu(mealType, menuItems) {
+            const menuContainer = document.getElementById(mealType + 'Menu');
+            menuContainer.innerHTML = '';
+            
+            if (!menuItems || menuItems.length === 0) {
+                menuContainer.innerHTML = '<div class="menu-item">No menu items available</div>';
+                return;
+            }
+            
+            menuItems.forEach((item, index) => {
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                menuItem.innerHTML = `
+                    <input type="checkbox" id="${mealType}_${index}" onchange="toggleMenuItem('${mealType}', ${index}, ${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                    <label for="${mealType}_${index}">
+                        <strong>${item.name}</strong><br>
+                        <small>${item.calories} cal | ${item.protein}g protein | ${item.carbs}g carbs | ${item.fiber}g fiber</small>
+                    </label>
+                `;
+                menuContainer.appendChild(menuItem);
+            });
+            
+            console.log(`Displayed ${menuItems.length} items for ${mealType}`);
+        }
+
+        // Toggle menu item selection
+        function toggleMenuItem(mealType, index, item) {
+            const checkbox = document.getElementById(`${mealType}_${index}`);
+            
+            if (checkbox.checked) {
+                selectedItems[mealType].push(item);
+            } else {
+                selectedItems[mealType] = selectedItems[mealType].filter((_, i) => i !== selectedItems[mealType].findIndex(selected => selected.name === item.name));
+            }
+            
+            updateSelectedItems(mealType);
+            updateNutritionTracking();
+        }
+
+
+        // Update selected items display
+        function updateSelectedItems(mealType) {
+            const container = document.getElementById(mealType + 'Selected');
+            container.innerHTML = '';
+            
+            selectedItems[mealType].forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'menu-item';
+                itemDiv.innerHTML = `
+                    <span><strong>${item.name}</strong> - ${item.calories} cal</span>
+                    <button type="button" onclick="removeItem('${mealType}', ${index})" style="float: right; background: #ff6b6b; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">×</button>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        // Remove item from selection
+        function removeItem(mealType, index) {
+            selectedItems[mealType].splice(index, 1);
+            updateSelectedItems(mealType);
+            updateNutritionTracking();
+        }
+
+        // Update nutrition tracking
+        function updateNutritionTracking() {
+            if (!userRequirements.calories) return;
+
+            let totalCalories = 0;
+            let totalProtein = 0;
+            let totalCarbs = 0;
+            let totalFiber = 0;
+
+            Object.values(selectedItems).forEach(mealItems => {
+                mealItems.forEach(item => {
+                    totalCalories += item.calories;
+                    totalProtein += item.protein;
+                    totalCarbs += item.carbs;
+                    totalFiber += item.fiber;
+                });
+            });
+
+            // Update display
+            document.getElementById('consumedCalories').textContent = Math.round(totalCalories);
+            document.getElementById('consumedProtein').textContent = Math.round(totalProtein) + 'g';
+            document.getElementById('consumedCarbs').textContent = Math.round(totalCarbs) + 'g';
+            document.getElementById('consumedFiber').textContent = Math.round(totalFiber) + 'g';
+
+            // Update progress bars
+            const calorieProgress = Math.min((totalCalories / userRequirements.calories) * 100, 100);
+            const proteinProgress = Math.min((totalProtein / userRequirements.protein) * 100, 100);
+            const carbsProgress = Math.min((totalCarbs / userRequirements.carbs) * 100, 100);
+            const fiberProgress = Math.min((totalFiber / userRequirements.fiber) * 100, 100);
+
+            document.getElementById('calorieProgress').style.width = calorieProgress + '%';
+            document.getElementById('proteinProgress').style.width = proteinProgress + '%';
+            document.getElementById('carbsProgress').style.width = carbsProgress + '%';
+            document.getElementById('fiberProgress').style.width = fiberProgress + '%';
+
+            // AI suggestions will be generated when user clicks "Calculate Consumption"
+        }
+
+    </script>
+</body>
+</html>
